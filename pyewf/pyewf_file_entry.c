@@ -177,6 +177,13 @@ PyMethodDef pyewf_file_entry_object_methods[] = {
 	  "\n"
 	  "Retrieves the SHA1 hash of the file entry data." },
 
+	{ "get_type",
+	  (PyCFunction) pyewf_file_entry_get_type,
+	  METH_NOARGS,
+	  "get_type() -> Integer\n"
+	  "\n"
+	  "Retrieves the type of the file entry." },
+
 	/* Functions to access the sub file entries */
 
 	{ "get_number_of_sub_file_entries",
@@ -245,6 +252,12 @@ PyGetSetDef pyewf_file_entry_object_get_set_definitions[] = {
 	  (getter) pyewf_file_entry_get_hash_value_sha1,
 	  (setter) 0,
 	  "The SHA1 hash of the file entry data.",
+	  NULL },
+
+	{ "type",
+	  (getter) pyewf_file_entry_get_type,
+	  (setter) 0,
+	  "The type of the file entry.",
 	  NULL },
 
 	{ "number_of_sub_file_entries",
@@ -1653,6 +1666,59 @@ on_error:
 	return( NULL );
 }
 
+/* Retrieves the type of the file entry
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject* pyewf_file_entry_get_type(
+           pyewf_file_entry_t* pyewf_file_entry,
+           PyObject* arguments PYEWF_ATTRIBUTE_UNUSED)
+{
+	libcerror_error_t* error 	= NULL;
+	PyObject* type_object 		= NULL;
+	static char* function       = "pyewf_file_entry_get_type";
+	uint8_t type 				= 0;
+	int result					= 0;
+
+	PYEWF_UNREFERENCED_PARAMETER(arguments)
+
+	if (pyewf_file_entry == NULL) {
+		PyErr_Format(
+			PyExc_ValueError,
+			"%s: invalid file entry.",
+			function
+		);
+
+		return NULL;
+	}
+
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libewf_file_entry_get_type(
+		pyewf_file_entry->file_entry,
+		&type,
+		&error
+	);
+
+	Py_END_ALLOW_THREADS
+
+	if (result != 1) {
+		pyewf_error_raise(
+			error,
+			PyExc_RuntimeError,
+		 	"%s: unable to retrieve type of the file entry.",
+		 	function
+		);
+
+		libcerror_error_free(&error);
+
+		return NULL;
+	}
+
+	type_object = pyewf_integer_unsigned_new_from_64bit((uint64_t) type);
+	
+	return type_object;
+}
+
 /* Retrieves the number of sub file entries
  * Returns a Python object if successful or NULL on error
  */
@@ -1870,4 +1936,3 @@ PyObject *pyewf_file_entry_get_sub_file_entries(
 	}
 	return( file_entries_object );
 }
-

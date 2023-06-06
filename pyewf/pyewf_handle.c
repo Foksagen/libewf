@@ -282,6 +282,13 @@ PyMethodDef pyewf_handle_object_methods[] = {
 	  "get_root_file_entry() -> Object\n"
 	  "\n"
 	  "Retrieves the root file entry." },
+	
+	{ "get_file_entry_by_path",
+	  (PyCFunction) pyewf_handle_get_file_entry_by_path,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "get_file_entry_by_path(path) -> Object\n"
+	  "\n"
+	  "Retrieves the file entry specified by the path." },
 
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
@@ -3545,3 +3552,87 @@ on_error:
 	return( NULL );
 }
 
+PyObject* pyewf_handle_get_file_entry_by_path(
+     pyewf_handle_t* pyewf_handle,
+     PyObject* arguments,
+     PyObject* keywords)
+{
+	libcerror_error_t* error 		= NULL;
+	static char* function 			= "pyewf_handle_get_file_entry_by_path";
+	static char* keyword_list[] 	= { "path", NULL };
+	PyObject* file_entry_object		= NULL;
+	char* path						= NULL;
+	ssize_t path_length				= 0;
+	libewf_file_entry_t* file_entry = NULL;
+	int result						= 0;
+
+	if (pyewf_handle == NULL) {
+		PyErr_Format(
+			PyExc_ValueError,
+		 	"%s: invalid handle.",
+		 	function
+		);
+
+		return NULL;
+	}
+
+	if (PyArg_ParseTupleAndKeywords(
+		arguments,
+	    keywords,
+	    "s",
+	    keyword_list,
+	    &path) == 0) return NULL;
+	
+	path_length = narrow_string_length(path);
+
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libewf_handle_get_file_entry_by_utf8_path(
+	    pyewf_handle->handle,
+	    (uint8_t*) path,
+	    path_length,
+	    &file_entry,
+	    &error
+	);
+
+	Py_END_ALLOW_THREADS
+
+	if (result == -1) {
+		pyewf_error_raise(
+			error,
+			PyExc_IOError,
+			"%s: unable to retrieve a file entry with path: %s.",
+			function,
+			path
+		);
+
+		libcerror_error_free(&error);
+
+		return NULL;
+	}
+	/* Check if the file entry is present
+	 */
+	else if (result == 0) {
+		Py_IncRef(Py_None);
+
+		return Py_None;
+	}
+
+	file_entry_object = pyewf_file_entry_new(
+		file_entry,
+		(PyObject*) pyewf_handle
+	);
+
+	if (file_entry_object == NULL) {
+		PyErr_Format(
+			PyExc_MemoryError,
+			"%s: unable to create a file entry with path: %s",
+			function,
+			path
+		);
+
+		return NULL;
+	}
+
+	return file_entry_object;
+}

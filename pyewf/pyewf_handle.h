@@ -188,6 +188,11 @@ PyObject *pyewf_handle_get_hash_values(
            pyewf_handle_t *pyewf_handle,
            PyObject *arguments );
 
+PyObject* pyewf_handle_get_file_entry_by_path(
+     pyewf_handle_t* pyewf_handle,
+     PyObject* arguments,
+     PyObject* keywords);
+
 #if defined( __cplusplus )
 }
 #endif

@@ -130,6 +130,11 @@ PyObject *pyewf_file_entry_get_hash_value_sha1(
            pyewf_file_entry_t *pyewf_file_entry,
            PyObject *arguments );
 
+PyObject* pyewf_file_entry_get_type(
+      pyewf_file_entry_t* pyewf_file_entry,
+      PyObject* arguments
+);
+
 PyObject *pyewf_file_entry_get_number_of_sub_file_entries(
            pyewf_file_entry_t *pyewf_file_entry,
            PyObject *arguments );
@@ -146,6 +151,8 @@ PyObject *pyewf_file_entry_get_sub_file_entry(
 PyObject *pyewf_file_entry_get_sub_file_entries(
            pyewf_file_entry_t *pyewf_file_entry,
            PyObject *arguments );
+
+// TODO: add source and attributes
 
 #if defined( __cplusplus )
 }
